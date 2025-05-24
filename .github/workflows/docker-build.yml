@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+# 明确指定权限
+permissions:
+  contents: write    # 允许创建发布和标签
+  packages: write    # 允许推送到 GitHub Packages
+
 # 环境变量
 env:
   # 初始版本，如果没有现有标签
