@@ -8,12 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
+	"essay-go/middleware"
 	"essay-go/models"
 	"essay-go/services"
 )
-
-// 用于签名JWT的密钥
-var jwtSecret = []byte("your-secret-key")
 
 // LoginRequest 登录请求结构
 type LoginRequest struct {
@@ -54,7 +52,7 @@ func Login(c *gin.Context) {
 	})
 
 	// 签名JWT
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString(middleware.JWTSecret)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法生成令牌"})
 		return
