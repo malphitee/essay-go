@@ -101,7 +101,7 @@ jobs:
           cache-to: |
             type=local,dest=/tmp/.buildx-cache-new
             type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/essay-go:buildcache,mode=max
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: |
             BUILD_DATE=${{ github.event.repository.updated_at }}
             VCS_REF=${{ github.sha }}

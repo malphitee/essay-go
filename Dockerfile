@@ -2,45 +2,62 @@
 
 # 阶段1: 构建Go应用 (原后端构建阶段)
 FROM golang:1.24.2-alpine AS builder
-# 设置Go模块代理为国内镜像
+
+# 设置Go模块代理为国内镜像和构建参数
 ENV GOPROXY=https://goproxy.cn,direct
+ENV CGO_ENABLED=0 
+ENV GOOS=linux 
+ENV GOARCH=amd64
+
 # 先配置Alpine的国内镜像源，再安装git
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk update && \
-    apk add --no-cache git
+    apk add --no-cache git ca-certificates tzdata && \
+    update-ca-certificates
+
+# 创建非 root 用户
+RUN adduser -D -g '' appuser
 
 WORKDIR /app
-# 复制go.mod和go.sum
-COPY go.mod go.sum ./
-# 下载依赖
-# RUN go mod download
-# 使用 tidy -e 来处理潜在的错误，并确保所有依赖都被记录
-RUN go mod tidy -e
 
-# 复制所有项目文件 (包括 .go 文件和 templates 目录等)
-# 确保 templates 目录在构建上下文中
+# 复制go.mod和go.sum并下载依赖
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+# 复制源代码
 COPY . .
 
-# 静态编译Go应用
-# 输出文件名可以保持为 essay-api 或改为 app
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w" -o /app/essay-server .
+# 使用缓存和并行构建加速编译
+RUN go build -ldflags="-s -w" -o /app/essay-server .
 
 # 阶段2: 最终运行镜像
 FROM alpine:3.19
-# 使用国内镜像
+
+# 使用国内镜像并安装必要的包
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache add ca-certificates tzdata && \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apk del tzdata
 
-WORKDIR /app
+# 创建非 root 用户
+RUN adduser -D -g '' appuser
 
-# 从构建阶段复制编译好的Go应用二进制文件
-COPY --from=builder /app/essay-server /app/essay-server
-# 复制templates目录
-# 确保 main.go 中的 router.LoadHTMLGlob("templates/*") 能找到这个路径
-COPY --from=builder /app/templates ./templates
+# 创建应用目录并设置权限
+WORKDIR /app
+RUN mkdir -p /app/data
+
+# 从构建阶段复制编译好的二进制文件和必要文件
+COPY --from=builder /app/essay-server /app/
+COPY --from=builder /app/templates /app/templates
+COPY --from=builder /app/data /app/data
+
+# 设置正确的文件权限
+RUN chmod +x /app/essay-server && \
+    chown -R appuser:appuser /app
+
+# 切换到非 root 用户
+USER appuser
 
 # 暴露应用端口
 EXPOSE 8080
