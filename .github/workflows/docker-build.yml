@@ -121,6 +121,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -a ${{ steps.version.outputs.version_tag }} -m "Release ${{ steps.version.outputs.version_tag }}"
+          
+          # 使用个人访问令牌推送标签
+          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin ${{ steps.version.outputs.version_tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
