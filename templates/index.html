@@ -35,9 +35,9 @@
             --bg-dark: #212529;
             
             /* 阴影 */
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
             
             /* 圆角 */
             --radius-sm: 0.25rem;
@@ -46,12 +46,122 @@
             
             /* 过渡 */
             --transition: all 0.2s ease-in-out;
+            
+            /* 登录相关 */
+            --login-bg: rgba(42, 111, 151, 0.05);
+            --login-border: rgba(42, 111, 151, 0.2);
+        }
+
+        /* 登录模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            right: 1rem;
+            top: 0.5rem;
+            color: var(--gray-600);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-btn:hover {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 111, 151, 0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .button-group button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .button-group button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .message-area {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+        }
+        
+        .message-area.error {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: var(--danger);
+        }
+        
+        .message-area.loading {
+            background-color: rgba(173, 181, 189, 0.1);
+            color: var(--gray-600);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         body {
@@ -62,9 +172,10 @@
             min-height: 100vh;
         }
 
-        .app-wrapper {
+        .app-container {
             display: flex;
             min-height: 100vh;
+            width: 100%;
         }
 
         /* === SIDEBAR STYLES === */
@@ -75,6 +186,150 @@
             padding: 1.5rem 1rem;
             position: relative;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        
+        #historyList {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+            flex: 1;
+            overflow-y: hidden;
+            max-height: none;
+        }
+        
+        #historyList li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        #historyList li:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        #historyList li .history-title {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 20px; /* 为删除按钮留出空间 */
+        }
+        
+        #historyList li .history-date {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        #historyList li .delete-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            line-height: 1;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #historyList li .delete-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+        }
+        
+        .user-status {
+            font-weight: 500;
+        }
+        
+        .login-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        
+        .login-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 登录对话框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gray-600);
+            cursor: pointer;
+        }
+        
+        .close-btn:hover {
+            color: var(--primary);
         }
 
         .history-sidebar h2 {
@@ -160,15 +415,16 @@
             background-color: var(--secondary);
             color: var(--bg-dark);
             border: none;
-            border-radius: var(--radius-md);
-            font-weight: 600;
+            border-radius: var(--radius-sm);
             cursor: pointer;
+            font-weight: 500;
             transition: var(--transition);
+            margin-top: auto; /* 将按钮推到底部 */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .history-sidebar button#newEssayButton:hover {
@@ -424,6 +680,24 @@
                 margin-top: 1.5rem;
             }
         }
+        
+        /* 侧边栏响应式调整 */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .history-sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+                position: relative;
+            }
+            
+            .editor-area {
+                padding: 1rem;
+            }
+        }
 
         .polished-content-area::before {
             content: '';
@@ -482,9 +756,12 @@
             }
 
             .editor-area {
-                padding: 1rem;
+                flex: 1;
+                padding: 1.5rem;
+                overflow-y: auto;
+                min-width: 0; /* 防止内容溢出 */
             }
-
+            
             .container {
                 padding: 1.5rem;
             }
@@ -492,9 +769,36 @@
     </style>
 </head>
 <body>
-    <div class="app-wrapper">
+    <div class="app-container">
+        <!-- 登录对话框 -->
+        <div id="loginModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+                <h2>登录</h2>
+                <div class="form-group">
+                    <label for="username">用户名:</label>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码:</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码">
+                </div>
+                <div class="button-group">
+                    <button id="loginButton" onclick="login()">登录</button>
+                </div>
+                <div id="loginMessage" class="message-area" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- 历史记录侧边栏 -->
         <div id="historySidebar" class="history-sidebar">
-            <h2>历史记录</h2>
+            <div class="sidebar-header">
+                <h2>历史记录</h2>
+                <div class="user-info">
+                    <span id="userStatus" class="user-status">未登录</span>
+                    <button id="loginStatusButton" class="login-btn" onclick="showLoginModal()">登录</button>
+                </div>
+            </div>
             <ul id="historyList"></ul>
             <button id="newEssayButton" onclick="createNewEssay()">➕ 新建作文</button>
         </div>
@@ -536,14 +840,298 @@
     </div>
 
     <script>
-        // --- History Feature Globals & Setup ---
+        // --- Globals & Setup ---
         let essays = [];
         let currentEssayId = null; 
         const HISTORY_STORAGE_KEY = 'aiEssayPolisherHistory';
+        const TOKEN_STORAGE_KEY = 'aiEssayPolisherToken';
+        const USER_STORAGE_KEY = 'aiEssayPolisherUser';
+        let isLoggedIn = false;
+        let currentUser = null;
 
         // --- Helper Functions ---
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+        
+        // --- 登录相关功能 ---
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+        
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+        
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                showLoginMessage('用户名和密码不能为空', 'error');
+                return;
+            }
+            
+            // 显示加载消息
+            showLoginMessage('正在登录...', 'loading');
+            
+            // 发送登录请求
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('登录失败');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 保存令牌和用户信息
+                localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+                
+                // 更新全局状态
+                isLoggedIn = true;
+                currentUser = data.user;
+                
+                // 更新 UI
+                updateLoginStatus();
+                
+                // 关闭登录对话框
+                closeLoginModal();
+                
+                // 显示成功消息
+                const messageArea = document.getElementById('messageDisplayArea');
+                messageArea.innerHTML = '<div style="color: var(--success); padding: 10px;">登录成功</div>';
+                messageArea.style.display = 'block';
+                setTimeout(() => {
+                    messageArea.style.display = 'none';
+                }, 3000);
+                
+                // 从 DynamoDB 获取数据
+                // 登录后只从云端获取数据，不主动同步本地数据到云端
+                fetchEssaysFromCloud();
+            })
+            .catch(error => {
+                console.error('登录错误:', error);
+                showLoginMessage('用户名或密码错误', 'error');
+            });
+        }
+        
+        function logout() {
+            // 清除令牌和用户信息
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            localStorage.removeItem(USER_STORAGE_KEY);
+            
+            // 更新全局状态
+            isLoggedIn = false;
+            currentUser = null;
+            
+            // 更新 UI
+            updateLoginStatus();
+            
+            // 显示消息
+            const messageArea = document.getElementById('messageDisplayArea');
+            messageArea.innerHTML = '<div style="color: var(--primary); padding: 10px;">已退出登录</div>';
+            messageArea.style.display = 'block';
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showLoginMessage(message, type = 'info') {
+            const loginMessage = document.getElementById('loginMessage');
+            let className = 'message-area';
+            
+            if (type === 'error') {
+                className += ' error';
+            } else if (type === 'loading') {
+                className += ' loading';
+            }
+            
+            loginMessage.className = className;
+            loginMessage.innerHTML = message;
+            loginMessage.style.display = 'block';
+        }
+        
+        function updateLoginStatus() {
+            const userStatus = document.getElementById('userStatus');
+            const loginButton = document.getElementById('loginStatusButton');
+            
+            if (isLoggedIn && currentUser) {
+                userStatus.textContent = currentUser.username;
+                loginButton.textContent = '退出';
+                loginButton.onclick = logout;
+            } else {
+                userStatus.textContent = '未登录';
+                loginButton.textContent = '登录';
+                loginButton.onclick = showLoginModal;
+            }
+        }
+        
+        // --- DynamoDB 同步功能 ---
+        function getAuthHeaders() {
+            const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+        
+        function syncEssaysToCloud() {
+            if (!isLoggedIn) return;
+            
+            // 将本地数据转换为 DynamoDB 格式
+            const dynamoEssays = essays.map((essay, index) => {
+                // 尝试从 id 中提取数字部分
+                let essayId;
+                try {
+                    essayId = parseInt(essay.id);
+                    if (isNaN(essayId)) {
+                        // 如果不是数字，则使用索引+1 作为 ID
+                        essayId = index + 1;
+                    }
+                } catch (e) {
+                    essayId = index + 1;
+                }
+                
+                // 处理父ID
+                let parentId = 0;
+                if (essay.parentId) {
+                    try {
+                        parentId = parseInt(essay.parentId);
+                        if (isNaN(parentId)) {
+                            parentId = 0;
+                        }
+                    } catch (e) {
+                        parentId = 0;
+                    }
+                }
+                
+                return {
+                    username: currentUser.username, // 主键，用户名
+                    id: essayId, // 排序键，数字ID
+                    updated_at: new Date(essay.lastModified).toISOString(), // 更新时间
+                    deleted_at: "", // 软删除时间，空表示未删除
+                    title: essay.title,
+                    originalContent: essay.originalContent,
+                    polishedContent: essay.polishedContent,
+                    parentId: parentId, // 父版本的ID
+                };
+            });
+            
+            // 发送同步请求
+            fetch('/api/essays/sync', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ essays: dynamoEssays })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('同步失败');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('同步成功:', data);
+            })
+            .catch(error => {
+                console.error('同步错误:', error);
+            });
+        }
+        
+        function fetchEssaysFromCloud() {
+            if (!isLoggedIn) return;
+            
+            // 从 DynamoDB 获取数据
+            fetch('/api/essays', {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('获取数据失败');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.essays && data.essays.length > 0) {
+                    // 将云端数据转换为本地格式
+                    const cloudEssays = data.essays.map(essay => ({
+                        id: essay.id.toString(), // 使用 ID 作为唯一标识符
+                        title: essay.title,
+                        originalContent: essay.originalContent,
+                        polishedContent: essay.polishedContent,
+                        lastModified: new Date(essay.updated_at).getTime(),
+                        parentId: essay.parentId ? essay.parentId.toString() : null, // 使用 parentId 作为父版本的标识
+                    }));
+                    
+                    // 合并本地和云端数据
+                    mergeEssays(cloudEssays);
+                }
+            })
+            .catch(error => {
+                console.error('获取数据错误:', error);
+            });
+        }
+        
+        function mergeEssays(cloudEssays) {
+            // 创建一个映射以便于快速查找
+            const localEssayMap = {};
+            essays.forEach(essay => {
+                localEssayMap[essay.id] = essay;
+            });
+            
+            // 获取当前最大ID
+            let maxId = 0;
+            essays.forEach(essay => {
+                const essayId = parseInt(essay.id);
+                if (!isNaN(essayId) && essayId > maxId) {
+                    maxId = essayId;
+                }
+            });
+            
+            // 合并云端数据
+            cloudEssays.forEach(cloudEssay => {
+                const localEssay = localEssayMap[cloudEssay.id];
+                
+                if (!localEssay) {
+                    // 如果本地没有这篇作文，添加到本地
+                    essays.push(cloudEssay);
+                } else {
+                    // ID重复的情况
+                    if (cloudEssay.title === localEssay.title && 
+                        cloudEssay.originalContent === localEssay.originalContent && 
+                        cloudEssay.polishedContent === localEssay.polishedContent) {
+                        // 内容相同，只保留一个版本（保留最新的）
+                        if (cloudEssay.lastModified > localEssay.lastModified) {
+                            Object.assign(localEssay, cloudEssay);
+                        }
+                    } else {
+                        // 内容不同，但ID相同，给云端版本分配新ID
+                        maxId++;
+                        const newCloudEssay = {...cloudEssay, id: maxId.toString()};
+                        console.log(`ID冲突，将云端作文ID从 ${cloudEssay.id} 改为 ${newCloudEssay.id}`);
+                        essays.push(newCloudEssay);
+                    }
+                }
+            });
+            
+            // 按最后修改时间排序
+            essays.sort((a, b) => b.lastModified - a.lastModified);
+            
+            // 保存并更新 UI
+            saveHistory();
+            renderHistoryList();
+            
+            // 如果当前没有选中作文，加载最新的一篇
+            if (!currentEssayId && essays.length > 0) {
+                loadEssayFromHistory(essays[0].id);
+            }
         }
 
         function saveHistory() {
@@ -557,17 +1145,41 @@
 
         function loadHistory() {
             try {
-                const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-                if (storedHistory) {
-                    essays = JSON.parse(storedHistory);
-                    // Sort essays by lastModified descending to show newest first
-                    essays.sort((a, b) => b.lastModified - a.lastModified);
-                } else {
-                    essays = []; 
+                // 先检查是否有保存的用户信息
+                const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+                const savedUser = localStorage.getItem(USER_STORAGE_KEY);
+                
+                if (savedToken && savedUser) {
+                    isLoggedIn = true;
+                    currentUser = JSON.parse(savedUser);
+                    updateLoginStatus();
                 }
-            } catch (e) {
-                console.error("Error loading history from localStorage:", e);
-                essays = []; 
+                
+                // 加载本地历史记录
+                const savedData = localStorage.getItem(HISTORY_STORAGE_KEY);
+                if (savedData) {
+                    essays = JSON.parse(savedData);
+                    // 按时间降序排序（最新的在前面）
+                    essays.sort((a, b) => b.lastModified - a.lastModified);
+                    renderHistoryList();
+                    
+                    // 如果有历史记录，加载最新的一篇
+                    if (essays.length > 0) {
+                        loadEssayFromHistory(essays[0].id);
+                    } else {
+                        createNewEssay();
+                    }
+                } else {
+                    createNewEssay();
+                }
+                
+                // 如果已登录，从云端获取数据
+                if (isLoggedIn) {
+                    fetchEssaysFromCloud();
+                }
+            } catch (error) {
+                console.error('加载历史记录失败:', error);
+                createNewEssay();
             }
         }
         
@@ -747,6 +1359,13 @@
             // 保存到本地存储并更新UI
             saveHistory();
             renderHistoryList();
+            
+            // 如果已登录，同步到云端
+            // 润色完成后才同步数据到 DynamoDB
+            if (isLoggedIn) {
+                console.log('润色完成，开始同步数据到云端');
+                syncEssaysToCloud();
+            }
         }
         
         // 防抖函数：延迟执行函数，如果在延迟时间内再次调用，则重新计时
@@ -798,6 +1417,11 @@
                 saveHistory();
                 renderHistoryList();
                 
+                // 如果已登录，同步到云端
+                if (isLoggedIn) {
+                    syncEssaysToCloud();
+                }
+                
                 console.log('初始作文已创建:', finalTitle);
             } else {
                 // 更新当前版本
@@ -813,6 +1437,11 @@
                         // 保存到本地存储并更新UI
                         saveHistory();
                         renderHistoryList();
+                        
+                        // 如果已登录，同步到云端
+                        if (isLoggedIn) {
+                            syncEssaysToCloud();
+                        }
                         
                         console.log('自动保存成功:', finalTitle);
                     }
@@ -888,6 +1517,12 @@
             saveHistory();
             renderHistoryList();
             
+            // 如果已登录，同步到云端
+            if (isLoggedIn) {
+                console.log('保存新版本，开始同步数据到云端');
+                syncEssaysToCloud();
+            }
+            
             // 显示成功消息
             messageArea.className = 'message-area';
             messageArea.innerHTML = '<div style="color: var(--success); padding: 10px;">新版本已保存</div>';
@@ -943,6 +1578,38 @@
                 emptyItem.style.textAlign = 'center';
                 emptyItem.style.opacity = '0.7';
                 historyList.appendChild(emptyItem);
+            }
+            
+            // 如果已登录，同步删除操作到云端
+            if (isLoggedIn) {
+                console.log('删除版本，开始同步数据到云端');
+                // 从 essayId 中提取数字ID
+                let numericId;
+                try {
+                    // 尝试直接将 essayId 转换为数字
+                    numericId = parseInt(essayId);
+                    if (isNaN(numericId)) {
+                        // 如果不是数字，则可能是时间戳或其他格式，使用默认值
+                        numericId = 1;
+                    }
+                } catch (e) {
+                    numericId = 1;
+                }
+                
+                // 删除云端的数据，使用数字 ID 作为唯一标识符
+                fetch(`/api/essays/${numericId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('删除失败');
+                    }
+                    console.log('云端数据删除成功');
+                })
+                .catch(error => {
+                    console.error('删除云端数据错误:', error);
+                });
             }
             
             // 显示成功消息

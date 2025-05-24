@@ -52,5 +52,14 @@ ENV GIN_MODE=release
 ENV DEEPSEEK_API_KEY=""
 ENV DEEPSEEK_MODEL="deepseek-chat"
 
+# 定义AWS相关环境变量
+ENV AWS_ACCESS_KEY_ID=""
+ENV AWS_SECRET_ACCESS_KEY=""
+ENV AWS_REGION="ap-northeast-1"
+ENV DYNAMODB_TABLE="essay"
+ENV ENABLE_DYNAMODB="false"
+
+ENV JWT_SECRET="your_secret_key"
+
 # 启动应用
 CMD ["/app/essay-server"]

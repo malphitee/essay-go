@@ -13,6 +13,10 @@ type Config struct {
 	AIKey          string
 	DeepSeekModel  string
 	DeepSeekAPIKey string
+	// AWS DynamoDB 配置
+	AWSRegion      string
+	DynamoDBTable  string
+	EnableDynamoDB bool
 }
 
 // LoadConfig 加载应用配置
@@ -23,7 +27,11 @@ func LoadConfig() *Config {
 		AIEndpoint:     getEnv("AI_ENDPOINT", ""),
 		AIKey:          getEnv("AI_KEY", ""),
 		DeepSeekModel:  getEnv("DEEPSEEK_MODEL", "deepseek-chat"),
-		DeepSeekAPIKey: "sk-e75601b8d3224e30aca1acf0b27964f8",
+		DeepSeekAPIKey: getEnv("DEEPSEEK_API_KEY", "sk-e75601b8d3224e30aca1acf0b27964f8"),
+		// AWS DynamoDB 配置
+		AWSRegion:      getEnv("AWS_REGION", "ap-northeast-1"),
+		DynamoDBTable:  getEnv("DYNAMODB_TABLE", "essay"),
+		EnableDynamoDB: getEnv("ENABLE_DYNAMODB", "true") == "true",
 	}
 
 	// 如果未配置DeepSeek API密钥，输出警告

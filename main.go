@@ -11,6 +11,7 @@ import (
 	"essay-go/config"
 	"essay-go/handlers"
 	"essay-go/middleware"
+	"essay-go/services"
 )
 
 func main() {
@@ -24,6 +25,12 @@ func main() {
 		gin.SetMode(gin.DebugMode) // 确保在非生产环境下是Debug模式
 	}
 
+	// 初始化 DynamoDB 服务（如果启用）
+	if cfg.EnableDynamoDB {
+		log.Println("初始化 DynamoDB 服务...")
+		services.InitDynamoDB(cfg.AWSRegion, cfg.DynamoDBTable)
+	}
+
 	// 初始化路由
 	router := gin.Default()
 
@@ -32,17 +39,28 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// 添加自定义中间件
-	// 注意：Logger中间件可能会因为CORS的移除而需要调整或移除，取决于其实现
-	// 如果Logger中间件与CORS有强依赖或特定逻辑，可能需要修改或暂时注释掉
-	router.Use(middleware.Logger()) // 暂时保留，后续观察
+	router.Use(middleware.Logger())
 	router.Use(middleware.Recovery())
 
 	// API路由
 	api := router.Group("/api")
 	{
-		api.POST("/polish", handlers.PolishEssay) // Keep the non-streaming version for now, or remove if fully replaced
-		// 如果 PolishEssayStream 仍然需要，保留它
-		api.GET("/polish/stream", handlers.PolishEssayStream) // Enable the streaming API
+		// 润色相关API
+		api.POST("/polish", handlers.PolishEssay)
+		api.GET("/polish/stream", handlers.PolishEssayStream)
+
+		// 认证相关API
+		api.POST("/auth/login", handlers.Login)
+
+		// 需要认证的API
+		auth := api.Group("/")
+		auth.Use(middleware.AuthRequired())
+		{
+			auth.GET("/user", handlers.GetUserInfo)
+			auth.POST("/essays/sync", handlers.SyncEssays)
+			auth.GET("/essays", handlers.GetEssays)
+			auth.DELETE("/essays/:id", handlers.DeleteEssay)
+		}
 	}
 
 	// 根路由，渲染 index.html
