@@ -6,27 +6,121 @@ on:
   pull_request:
     branches: [ main ]
 
+# 环境变量
+env:
+  # 初始版本，如果没有现有标签
+  INITIAL_VERSION: 0.0.1
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整历史记录，用于版本计算
 
+      # 生成自动递增的版本号
+      - name: Generate Version Number
+        id: version
+        run: |
+          # 获取最新的版本标签
+          LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
+          
+          if [ -z "$LATEST_TAG" ]; then
+            # 如果没有标签，使用初始版本
+            NEW_VERSION="${{ env.INITIAL_VERSION }}"
+          else
+            # 移除 'v' 前缀
+            LATEST_VERSION=${LATEST_TAG#v}
+            # 分割版本号
+            IFS='.' read -ra VERSION_PARTS <<< "$LATEST_VERSION"
+            MAJOR=${VERSION_PARTS[0]:-0}
+            MINOR=${VERSION_PARTS[1]:-0}
+            PATCH=${VERSION_PARTS[2]:-0}
+            # 递增补丁版本
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+          
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "version_tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      # 设置 Go 环境
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+
+      # 缓存 Go 模块
+      - name: Go Module Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # 设置 Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # 缓存 Docker 层
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # 登录到 DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 构建并推送 Docker 镜像
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/essay-go:latest,${{ secrets.DOCKERHUB_USERNAME }}/essay-go:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/essay-go:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/essay-go:buildcache,mode=max
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/essay-go:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/essay-go:${{ steps.version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/essay-go:${{ github.sha }}
+          cache-from: |
+            type=local,src=/tmp/.buildx-cache
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/essay-go:buildcache
+          cache-to: |
+            type=local,dest=/tmp/.buildx-cache-new
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/essay-go:buildcache,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.ref_name }}
+      
+      # 移动缓存，避免缓存无限增长
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      
+      # 创建并推送 Git 标签
+      - name: Create and Push Tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "Creating new tag: ${{ steps.version.outputs.version_tag }}"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a ${{ steps.version.outputs.version_tag }} -m "Release ${{ steps.version.outputs.version_tag }}"
+          git push origin ${{ steps.version.outputs.version_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
