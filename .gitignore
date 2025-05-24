@@ -1,0 +1,45 @@
+# 前端忽略规则
+/frontend/node_modules
+/frontend/.vite
+/frontend/dist
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/.DS_Store
+
+# 后端忽略规则
+/backend/vendor/
+/backend/.env
+/backend/tmp/
+/backend/*.exe
+/backend/*.exe~
+/backend/*.dll
+/backend/*.so
+/backend/*.dylib
+/backend/*.test
+/backend/*.out
+/backend/go.work
+
+# 编辑器和IDE文件
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 构建输出
+/dist/
+/build/
+
+# 日志文件
+*.log

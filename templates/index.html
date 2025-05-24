@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作文润色</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            /* 现代优雅的配色方案 */
+            --primary: #2a6f97; /* 深蓝色 */
+            --primary-light: #61a5c2; /* 中蓝色 */
+            --primary-dark: #014f86; /* 暗蓝色 */
+            --secondary: #89c2d9; /* 浅蓝色 */
+            --accent: #ff9e00; /* 橙色强调色 */
+            --success: #52b788; /* 绿色 */
+            --warning: #ffb703; /* 黄色 */
+            --danger: #e63946; /* 红色 */
+            
+            /* 中性色 */
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            
+            /* 文本和背景 */
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --bg-light: #f8f9fa;
+            --bg-dark: #212529;
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            
+            /* 圆角 */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            
+            /* 过渡 */
+            --transition: all 0.2s ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* === SIDEBAR STYLES === */
+        .history-sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .history-sidebar h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .history-sidebar ul {
+            list-style-type: none;
+            margin-bottom: 1rem;
+        }
+
+        .history-sidebar li {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        
+        .history-sidebar li .delete-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(230, 57, 70, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .history-sidebar li:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .history-sidebar li .delete-btn:hover {
+            background-color: rgba(230, 57, 70, 1);
+            transform: scale(1.1);
+        }
+
+        .history-sidebar li:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .history-sidebar li.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .history-sidebar li .history-title {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-sidebar li .history-date {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .history-sidebar button#newEssayButton {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--secondary);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .history-sidebar button#newEssayButton:hover {
+            background-color: #7dd3f7;
+            transform: translateY(-2px);
+        }
+
+        /* === MAIN CONTENT AREA === */
+        .editor-area {
+            flex-grow: 1;
+            padding: 1.5rem;
+            background-color: var(--bg-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem 2rem;
+            max-width: 1400px; /* 进一步增加最大宽度 */
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            color: var(--text-primary);
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        textarea {
+            min-height: 250px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem auto 0;
+        }
+
+        button#polishButton, button#saveVersionButton {
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 140px;
+        }
+        
+        button#polishButton {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+
+        button#saveVersionButton {
+            background: linear-gradient(90deg, var(--accent) 0%, #ff7b00 100%);
+        }
+
+        button#polishButton:hover, button#saveVersionButton:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        button#polishButton:active, button#saveVersionButton:active {
+            transform: translateY(0);
+        }
+
+        /* Add icons to the buttons */
+        button#polishButton::before {
+            content: '✨';
+            font-size: 1.25rem;
+        }
+        
+        button#saveVersionButton::before {
+            content: '💾';
+            font-size: 1.25rem;
+        }
+
+        .message-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background-color: var(--gray-100);
+            border-left: 4px solid var(--primary);
+        }
+
+        .message-area.loading {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-left-color: var(--primary);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 40px;
+            padding: 0.5rem 1rem;
+        }
+
+        .message-area.loading::before {
+            content: '';
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .message-area .error {
+            background-color: rgba(248, 113, 113, 0.1);
+            border-left: 4px solid var(--danger);
+            color: var(--danger);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+        }
+
+        .polished-content-area {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            position: relative;
+        }
+        
+        /* 左右对比容器样式 */
+        /* 主内容左右布局 */
+        .main-content-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .input-area {
+            flex: 1;
+            min-width: 0; /* 防止内容溢出 */
+        }
+        
+        .result-area {
+            flex: 1;
+            min-width: 0; /* 防止内容溢出 */
+            padding: 1.25rem;
+            background-color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            border-left: 3px solid var(--accent);
+        }
+        
+        .result-area h3 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .polished-content {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background-color: var(--gray-100);
+            min-height: 250px; /* 与输入框高度保持一致 */
+            overflow-y: auto; /* 内容过多时显示滚动条 */
+        }
+        
+        .polished-content p {
+            margin: 0;
+            white-space: pre-wrap;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        /* 调整按钮组样式 */
+        .button-group {
+            margin-top: 1rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .main-content-wrapper {
+                flex-direction: column;
+            }
+            
+            .result-area {
+                margin-top: 1.5rem;
+            }
+        }
+
+        .polished-content-area::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-top: 1px solid var(--gray-200);
+            border-left: 1px solid var(--gray-200);
+            transform: rotate(45deg);
+        }
+
+        .polished-content-area h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .polished-content-area h3::before {
+            content: '✨';
+            font-size: 1.25rem;
+        }
+
+        .polished-content-area h4 {
+            font-style: italic;
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 0.5rem;
+        }
+
+        .polished-content-area p {
+            white-space: pre-wrap;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+
+            .history-sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .editor-area {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <div id="historySidebar" class="history-sidebar">
+            <h2>历史记录</h2>
+            <ul id="historyList"></ul>
+            <button id="newEssayButton" onclick="createNewEssay()">➕ 新建作文</button>
+        </div>
+        <div class="editor-area">
+            <div class="container">
+                <h1>AI 作文润色工具</h1>
+                
+                <div class="main-content-wrapper">
+                    <!-- 左侧输入区域 -->
+                    <div class="input-area">
+                        <div class="form-group">
+                            <label for="title">作文标题:</label>
+                            <input type="text" id="title" name="title" placeholder="请输入作文标题">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content">作文内容:</label>
+                            <textarea id="content" name="content" placeholder="在此输入作文内容..."></textarea>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="polishButton" onclick="polishEssay()">润色作文</button>
+                            <button id="saveVersionButton" onclick="saveAsNewVersion()">保存版本</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧润色结果区域 -->
+                    <div id="polishedResultDisplay" class="result-area" style="display: none;">
+                        <h3>润色结果</h3>
+                        <div class="polished-content">
+                            <p id="polishedText"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="messageDisplayArea" class="message-area" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- History Feature Globals & Setup ---
+        let essays = [];
+        let currentEssayId = null; 
+        const HISTORY_STORAGE_KEY = 'aiEssayPolisherHistory';
+
+        // --- Helper Functions ---
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        function saveHistory() {
+            try {
+                localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(essays));
+            } catch (e) {
+                console.error("Error saving history to localStorage:", e);
+                // TODO: Inform user if localStorage is full or saving fails
+            }
+        }
+
+        function loadHistory() {
+            try {
+                const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+                if (storedHistory) {
+                    essays = JSON.parse(storedHistory);
+                    // Sort essays by lastModified descending to show newest first
+                    essays.sort((a, b) => b.lastModified - a.lastModified);
+                } else {
+                    essays = []; 
+                }
+            } catch (e) {
+                console.error("Error loading history from localStorage:", e);
+                essays = []; 
+            }
+        }
+        
+        // 渲染历史记录列表
+        function renderHistoryList() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (essays.length === 0) {
+                const emptyItem = document.createElement('li');
+                emptyItem.textContent = '暂无历史记录';
+                emptyItem.style.textAlign = 'center';
+                emptyItem.style.opacity = '0.7';
+                historyList.appendChild(emptyItem);
+                return;
+            }
+            
+            // 创建版本计数器
+            const titleVersionCount = {};
+            
+            // 首先计算每个标题的版本数量
+            essays.forEach(essay => {
+                const title = essay.title || '无标题作文';
+                if (!titleVersionCount[title]) {
+                    titleVersionCount[title] = 0;
+                }
+                titleVersionCount[title]++;
+            });
+            
+            essays.forEach(essay => {
+                const li = document.createElement('li');
+                li.dataset.id = essay.id;
+                if (essay.id === currentEssayId) {
+                    li.classList.add('active');
+                }
+                
+                // 创建标题元素
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'history-title';
+                
+                const title = essay.title || '无标题作文';
+                let displayTitle = title;
+                
+                // 如果同一标题有多个版本，显示版本标记
+                if (titleVersionCount[title] > 1 || essay.parentId) {
+                    // 找出这是这个标题的第几个版本
+                    let versionNumber = 1;
+                    const sameTitle = essays.filter(e => (e.title || '无标题作文') === title);
+                    
+                    // 按时间排序，找出当前版本的索引
+                    sameTitle.sort((a, b) => a.lastModified - b.lastModified);
+                    const versionIndex = sameTitle.findIndex(e => e.id === essay.id);
+                    if (versionIndex !== -1) {
+                        versionNumber = versionIndex + 1;
+                    }
+                    
+                    displayTitle = `${title} (版本 ${versionNumber})`;
+                }
+                
+                titleSpan.textContent = displayTitle;
+                
+                // 创建日期元素
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'history-date';
+                dateSpan.textContent = formatDate(essay.lastModified);
+                
+                // 创建删除按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '&times;'; // 小叉号
+                deleteBtn.title = '删除这个版本';
+                
+                // 添加删除按钮的点击事件，并阻止事件冒泡
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡到列表项
+                    deleteEssay(essay.id);
+                });
+                
+                // 添加到列表项
+                li.appendChild(titleSpan);
+                li.appendChild(dateSpan);
+                li.appendChild(deleteBtn);
+                
+                // 添加点击事件
+                li.addEventListener('click', () => loadEssayFromHistory(essay.id));
+                
+                historyList.appendChild(li);
+            });
+        }
+        
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}`;
+        }
+        
+        function padZero(num) {
+            return num < 10 ? `0${num}` : num;
+        }
+        
+        // 从历史记录加载作文
+        function loadEssayFromHistory(essayId) {
+            const essay = essays.find(e => e.id === essayId);
+            if (!essay) return;
+            
+            currentEssayId = essay.id;
+            
+            // 填充表单
+            document.getElementById('title').value = essay.title || '';
+            document.getElementById('content').value = essay.originalContent || '';
+            
+            // 如果有润色后的内容，显示结果区域
+            if (essay.polishedContent) {
+                document.getElementById('polishedText').textContent = essay.polishedContent;
+                document.getElementById('polishedResultDisplay').style.display = 'block';
+            } else {
+                document.getElementById('polishedResultDisplay').style.display = 'none';
+            }
+            
+            // 隐藏消息区域
+            document.getElementById('messageDisplayArea').style.display = 'none';
+            
+            // 更新列表中的选中状态
+            document.querySelectorAll('#historyList li').forEach(li => {
+                if (li.dataset.id === essayId) {
+                    li.classList.add('active');
+                } else {
+                    li.classList.remove('active');
+                }
+            });
+        }
+        
+        // 创建新作文
+        function createNewEssay() {
+            currentEssayId = null;
+            
+            // 清空表单
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            
+            // 清空和隐藏结果区域
+            const polishedText = document.getElementById('polishedText');
+            if (polishedText) polishedText.textContent = '';
+            document.getElementById('polishedResultDisplay').style.display = 'none';
+            document.getElementById('messageDisplayArea').style.display = 'none';
+            
+            // 清除列表中的选中状态
+            document.querySelectorAll('#historyList li').forEach(li => {
+                li.classList.remove('active');
+            });
+            
+            // 聚焦到标题输入框
+            setTimeout(() => {
+                document.getElementById('title').focus();
+            }, 100);
+        }
+        
+        // 添加或更新历史记录
+        function addOrUpdateHistory(essayData) {
+            const now = Date.now();
+            
+            // 润色后的内容总是创建新版本，而不是覆盖现有版本
+            const newId = generateId();
+            const newEssay = {
+                id: newId,
+                ...essayData,
+                lastModified: now,
+                parentId: currentEssayId // 记录父版本 ID
+            };
+            
+            essays.push(newEssay);
+            currentEssayId = newId;
+            
+            // 按最后修改时间排序
+            essays.sort((a, b) => b.lastModified - a.lastModified);
+            
+            // 保存到本地存储并更新UI
+            saveHistory();
+            renderHistoryList();
+        }
+        
+        // 防抖函数：延迟执行函数，如果在延迟时间内再次调用，则重新计时
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+        
+        // 自动保存函数 - 只更新当前版本，不创建新版本
+        function autoSave() {
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
+            
+            // 获取输入值
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            // 如果标题和内容都为空，不保存
+            if (!title && !content) return;
+            
+            // 如果标题为空但有内容，给一个默认标题
+            const finalTitle = title || '无标题作文';
+            
+            // 如果当前没有正在编辑的作文，创建一个新的
+            if (!currentEssayId) {
+                const now = Date.now();
+                const newId = generateId();
+                const newEssay = {
+                    id: newId,
+                    title: finalTitle,
+                    originalContent: content,
+                    polishedContent: '',
+                    lastModified: now
+                };
+                
+                essays.push(newEssay);
+                currentEssayId = newId;
+                
+                // 按最后修改时间排序
+                essays.sort((a, b) => b.lastModified - a.lastModified);
+                
+                // 保存到本地存储并更新UI
+                saveHistory();
+                renderHistoryList();
+                
+                console.log('初始作文已创建:', finalTitle);
+            } else {
+                // 更新当前版本
+                const index = essays.findIndex(e => e.id === currentEssayId);
+                if (index !== -1) {
+                    // 检查是否有内容变化
+                    if (essays[index].title !== finalTitle || essays[index].originalContent !== content) {
+                        // 更新当前版本
+                        essays[index].title = finalTitle;
+                        essays[index].originalContent = content;
+                        essays[index].lastModified = Date.now();
+                        
+                        // 保存到本地存储并更新UI
+                        saveHistory();
+                        renderHistoryList();
+                        
+                        console.log('自动保存成功:', finalTitle);
+                    }
+                }
+            }
+        }
+        
+        // 创建防抖后的自动保存函数
+        const debouncedAutoSave = debounce(autoSave, 3000); // 3秒后执行
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            renderHistoryList(); // Render history after loading
+            createNewEssay(); // Start with a new essay interface
+            
+            // 为标题和内容输入框添加输入事件监听器
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
+            
+            titleInput.addEventListener('input', debouncedAutoSave);
+            contentInput.addEventListener('input', debouncedAutoSave);
+        });
+
+        // 保存为新版本函数
+        function saveAsNewVersion() {
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
+            const messageArea = document.getElementById('messageDisplayArea');
+            
+            // 获取输入值
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            // 输入验证
+            if (!title || !content) {
+                messageArea.innerHTML = '<div class="error">请填写标题和内容后再保存</div>';
+                messageArea.style.display = 'block';
+                setTimeout(() => {
+                    messageArea.style.display = 'none';
+                }, 3000);
+                return;
+            }
+            
+            // 获取当前润色后的内容（如果有）
+            const polishedText = document.getElementById('polishedText');
+            const polishedContent = polishedText.textContent || '';
+            
+            // 创建新版本
+            const newId = generateId();
+            const now = Date.now();
+            
+            // 构建新的作文对象
+            const newEssay = {
+                id: newId,
+                title: title,
+                originalContent: content,
+                polishedContent: polishedContent,
+                lastModified: now,
+                parentId: currentEssayId // 记录父版本 ID
+            };
+            
+            // 添加到历史记录
+            essays.push(newEssay);
+            
+            // 更新当前 ID
+            currentEssayId = newId;
+            
+            // 按最后修改时间排序
+            essays.sort((a, b) => b.lastModified - a.lastModified);
+            
+            // 保存到本地存储并更新UI
+            saveHistory();
+            renderHistoryList();
+            
+            // 显示成功消息
+            messageArea.className = 'message-area';
+            messageArea.innerHTML = '<div style="color: var(--success); padding: 10px;">新版本已保存</div>';
+            messageArea.style.display = 'block';
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 删除作文版本
+        function deleteEssay(essayId) {
+            // 确认删除
+            if (!confirm('确定要删除这个版本吗？此操作不可恢复。')) {
+                return;
+            }
+            
+            // 找到要删除的作文索引
+            const index = essays.findIndex(e => e.id === essayId);
+            if (index === -1) return;
+            
+            // 先从 DOM 中移除对应的元素
+            const listItem = document.querySelector(`#historyList li[data-id="${essayId}"]`);
+            if (listItem) {
+                listItem.remove();
+            }
+            
+            // 如果要删除的是当前正在编辑的作文
+            if (essayId === currentEssayId) {
+                // 先从数组中删除
+                essays.splice(index, 1);
+                saveHistory();
+                
+                // 如果还有其他作文，加载最新的一篇
+                if (essays.length > 0) {
+                    // 加载最新的一篇
+                    const nextEssay = essays[0]; // 因为我们按时间排序，所以第一个是最新的
+                    loadEssayFromHistory(nextEssay.id);
+                } else {
+                    // 如果这是最后一篇作文，创建新作文
+                    createNewEssay();
+                }
+            } else {
+                // 如果要删除的不是当前正在编辑的作文，直接删除
+                essays.splice(index, 1);
+                saveHistory();
+            }
+            
+            // 如果历史记录为空，显示“暂无历史记录”
+            if (essays.length === 0) {
+                const historyList = document.getElementById('historyList');
+                const emptyItem = document.createElement('li');
+                emptyItem.textContent = '暂无历史记录';
+                emptyItem.style.textAlign = 'center';
+                emptyItem.style.opacity = '0.7';
+                historyList.appendChild(emptyItem);
+            }
+            
+            // 显示成功消息
+            const messageArea = document.getElementById('messageDisplayArea');
+            messageArea.className = 'message-area';
+            messageArea.innerHTML = '<div style="color: var(--success); padding: 10px;">版本已删除</div>';
+            messageArea.style.display = 'block';
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 3000);
+        }
+        
+        // --- End History Setup ---
+
+        function polishEssay() { 
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
+            const messageArea = document.getElementById('messageDisplayArea');
+            const polishedResultDisplay = document.getElementById('polishedResultDisplay');
+            const polishedText = document.getElementById('polishedText');
+
+            // 获取输入值
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            // 输入验证
+            if (!title || !content) {
+                messageArea.innerHTML = '<div class="error">请填写标题和内容</div>';
+                messageArea.style.display = 'block';
+                return;
+            }
+
+            // 清空润色区域并隐藏结果区域，直到收到第一个数据才显示
+            polishedText.textContent = '';
+            polishedResultDisplay.style.display = 'none';
+
+            // 显示加载指示器
+            messageArea.innerHTML = '<div style="display: inline-flex; align-items: center; gap: 0.5rem;">正在请求AI润色服务，请稍候...</div>';
+            messageArea.className = 'message-area loading';
+            messageArea.style.display = 'block';
+            
+            // 在消息显示区域显示提示
+            const messageDisplayArea = document.getElementById('messageDisplayArea');
+            messageDisplayArea.innerHTML = '<div style="color: var(--primary); padding: 10px; text-align: center; font-size: 14px;">正在分析您的作文并生成润色结果，这可能需要几秒钟时间...</div>';
+            messageDisplayArea.style.display = 'block';
+            
+            // 准备接收流式响应
+            const eventSource = new EventSource(`/api/polish/stream?title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`);
+            let polishedContent = '';
+
+            eventSource.onmessage = function(event) {
+                // 如果收到结束消息
+                if (event.data === "[DONE]") {
+                    eventSource.close();
+                    messageArea.style.display = 'none';
+                    document.getElementById('messageDisplayArea').style.display = 'none';
+                    
+                    // 保存到历史记录
+                    if (polishedContent) {
+                        addOrUpdateHistory({
+                            title: title,
+                            originalContent: content,
+                            polishedContent: polishedContent
+                        });
+                    }
+                    return;
+                }
+                
+                // 累加接收到的内容
+                polishedContent += event.data;
+                
+                // 更新显示 - 直接显示润色内容，不显示“正在润色中...”
+                polishedText.textContent = polishedContent.replace(/^正在润色中\.\.\.(.*)/s, '$1').trim();
+                
+                // 确保结果区域显示
+                if (polishedResultDisplay.style.display === 'none') {
+                    polishedResultDisplay.style.display = 'block';
+                }
+                
+                // 隐藏加载消息和提示消息
+                messageArea.style.display = 'none';
+                document.getElementById('messageDisplayArea').style.display = 'none';
+            };
+
+            eventSource.onerror = function(error) {
+                eventSource.close();
+                console.error('EventSource error:', error);
+                
+                // 隐藏消息显示区域
+                document.getElementById('messageDisplayArea').style.display = 'none';
+                
+                // 显示错误消息
+                messageArea.innerHTML = '<div class="error">润色过程中发生错误，请重试</div>';
+                messageArea.className = 'message-area';
+                messageArea.style.display = 'block';
+            };
+
+            eventSource.addEventListener('close', function() {
+                eventSource.close();
+                console.log('EventSource connection closed');
+                
+                // 确保消息显示区域被隐藏
+                document.getElementById('messageDisplayArea').style.display = 'none';
+                
+                // 保存到历史记录
+                if (polishedContent) {
+                    addOrUpdateHistory({
+                        title: title,
+                        originalContent: content,
+                        polishedContent: polishedContent
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
