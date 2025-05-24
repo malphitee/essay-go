@@ -113,15 +113,20 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       
-      # 创建并推送 Git 标签
-      - name: Create and Push Tag
+      # 使用 GitHub 提供的操作创建发布
+      - name: Create Release
+        id: create_release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          echo "Creating new tag: ${{ steps.version.outputs.version_tag }}"
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag -a ${{ steps.version.outputs.version_tag }} -m "Release ${{ steps.version.outputs.version_tag }}"
-          
-          # 使用个人访问令牌推送标签
-          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-          git push origin ${{ steps.version.outputs.version_tag }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version_tag }}
+          release_name: Release ${{ steps.version.outputs.version_tag }}
+          draft: false
+          prerelease: false
+          body: |
+            Release ${{ steps.version.outputs.version_tag }} created automatically by GitHub Actions.
+            
+            Build date: ${{ github.event.repository.updated_at }}
+            Commit: ${{ github.sha }}
